@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Как компьютер понимает данные: Теория и Практика</title>
+    <style>
+        :root {
+            --bg: #030712;
+            --surface: rgba(17, 24, 39, 0.75);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(99, 102, 241, 0.35);
+            
+            --primary: #818cf8;
+            --secondary: #c084fc;
+            --accent: #38bdf8;
+            --success: #34d399;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --code-bg: #090d16;
+            
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding: clamp(1rem, 4vw, 3rem) clamp(0.75rem, 3vw, 2rem);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 960px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: clamp(2.5rem, 5vw, 4rem);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            border-radius: 9999px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.15;
+            background: linear-gradient(135deg, #ffffff 0%, var(--primary) 50%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: clamp(1.25rem, 3.5vw, 2.25rem);
+            margin-bottom: 2.5rem;
+            backdrop-filter: blur(12px);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .icon-wrapper {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        h2 {
+            font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .theory-block {
+            background: rgba(6, 9, 14, 0.4);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .theory-block h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .grid-card {
+            background: rgba(6, 9, 14, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .grid-card h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Practice Area */
+        .practice-box {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.4), rgba(17, 24, 39, 0.8));
+            border: 1px solid rgba(129, 140, 248, 0.25);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .practice-title {
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .demo-input, .demo-textarea {
+            width: 100%;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            color: #fff;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 1rem;
+            resize: vertical;
+        }
+
+        .demo-input:focus, .demo-textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-action {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text-main);
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            background: rgba(99, 102, 241, 0.4);
+            border-color: var(--primary);
+        }
+
+        .char-breakdown {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .char-chip {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 75px;
+        }
+
+        .char-chip.special {
+            border-color: var(--warning);
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .char-symbol {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .char-chip.special .char-symbol {
+            color: var(--warning);
+        }
+
+        .char-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            margin-top: 0.2rem;
+        }
+
+        /* RAM Simulation */
+        .controls-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .select-input {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .ram-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .ram-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .ram-cell.allocated {
+            background: rgba(99, 102, 241, 0.25);
+            border-color: var(--primary);
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Quiz Section */
+        .quiz-option {
+            background: rgba(6, 9, 14, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--success);
+        }
+
+        .quiz-option.wrong {
+            border-color: #f43f5e;
+            background: rgba(244, 63, 94, 0.15);
+            color: #f43f5e;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 1rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+            background: rgba(6, 9, 14, 0.4);
+        }
+
+        th, td {
+            padding: 0.9rem 1.1rem;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        th {
+            background: rgba(31, 41, 55, 0.6);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        code {
+            background: var(--code-bg);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="badge">Интерактивный учебник</div>
+        <h1>Как компьютер понимает данные</h1>
+        <p class="subtitle">Пошаговое руководство: сначала понятная теория, затем практические интерактивные тесты и симуляторы</p>
+    </header>
+
+    <!-- BLOCK 1: Physical level & Binary -->
+    <section class="card">
+        <div class="card-header">
+            <div class="icon-wrapper">🔌</div>
+            <h2>1. Физический уровень: Электричество, Биты и Байты</h2>
+        </div>
+
+        <div class="theory-block">
+            <h3>📖 Объяснение темы</h3>
+            <p>Компьютер — это электронное устройство. Он не умеет читать буквы или различать картинки. Вся обработка информации происходит с помощью микроскопических транзисторов, которые работают как обычные переключатели света:</p>
+            <ul>
+                <li><strong>Бит (Bit):</strong> Минимальная единица данных. Есть напряжение = <code>1</code>, нет напряжения = <code>0</code>.</li>
+                <li><strong>Байт (Byte):</strong> Группа из 8 битов. С помощью 1 байта можно составить 2<sup>8</sup> = 256 комбинированных состояний.</li>
+            </ul>
+        </div>
+
+        <div class="practice-box">
+            <div class="practice-title">
+                <span>🧪</span> Практика: Конвертер символа в электрический двоичный код
+            </div>
+            <p style="font-size: 0.9rem;">Введите один любой символ, чтобы увидеть, в какую последовательность из 8 битов (0 и 1) он превращается в памяти:</p>
+            
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="bitInput" maxlength="1" class="demo-input" style="width: 80px; margin-bottom: 0; text-align: center; font-size: 1.2rem;" value="A">
+                <div>
+                    <div>Двоичный код (8 битов): <code id="bitResult" style="font-size: 1.1rem; color: var(--accent);">00000000</code></div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">Десятичный номер ASCII: <span id="decResult">0</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOCK 2 & 3: Text Encodings & Special Characters Analyzer -->
+    <section class="card">
+        <div class="card-header">
+            <div class="icon-wrapper">🔤</div>
+            <h2>2. Таблицы кодировок и Интерактивный Анализатор</h2>
+        </div>
+
+        <div class="theory-block">
+            <h3>📖 Объяснение темы</h3>
+            <p>Чтобы превратить числовой код в буквы, используются <strong>таблицы кодировок</strong> (ASCII и UTF-8).</p>
+            <p>Важно помнить: <strong>пробел (Space)</strong> и <strong>Enter (перенос строки \n)</strong> — это тоже полноценные символы, занимающие место в памяти.</p>
+        </div>
+
+        <div class="practice-box">
+            <div class="practice-title">
+                <span>🧪</span> Практика: Живой анализатор кодировки и спецсимволов
+            </div>
+            <p style="font-size: 0.9rem;">Пишите текст в поле или нажимайте на кнопки быстрого добавления спецсимволов:</p>
+
+            <textarea id="userInput" class="demo-textarea" rows="3" placeholder="Введите текст...">Hi! Привет! Ա 🔥</textarea>
+
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <button type="button" class="btn-action" id="btnSpace">+ Добавить Пробел</button>
+                <button type="button" class="btn-action" id="btnEnter">+ Добавить Enter (\n)</button>
+                <button type="button" class="btn-action" id="btnHash">+ Добавить #</button>
+                <button type="button" class="btn-action" id="btnClear" style="margin-left: auto; background: rgba(244, 63, 94, 0.2); border-color: rgba(244, 63, 94, 0.4);">Очистить</button>
+            </div>
+
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                <div>Общий размер: <strong id="totalBytes" style="color: var(--accent);">0 байт</strong></div>
+                <div>Символов: <strong id="totalChars" style="color: var(--secondary);">0</strong></div>
+            </div>
+
+            <div class="char-breakdown" id="charBreakdown">
+                <!-- Dynamic Chips -->
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOCK 4: Variables & RAM Memory Allocation -->
+    <section class="card">
+        <div class="card-header">
+            <div class="icon-wrapper">🧠</div>
+            <h2>3. Создание переменных и выделение памяти (RAM)</h2>
+        </div>
+
+        <div class="theory-block">
+            <h3>📖 Объяснение темы</h3>
+            <p>Когда вы создаете переменную, система выделяет последовательный блок ячеек в оперативной памяти (RAM). Количество выделяемых байт зависит от типа данных.</p>
+        </div>
+
+        <div class="practice-box">
+            <div class="practice-title">
+                <span>🧪</span> Практика: Эмулятор ячеек оперативной памяти RAM
+            </div>
+            <p style="font-size: 0.9rem;">Выберите тип переменной и введите значение, чтобы увидеть зарезервированные ячейки в RAM:</p>
+
+            <div class="controls-group">
+                <select id="dataTypeSelect" class="select-input">
+                    <option value="bool">Boolean (1 байт)</option>
+                    <option value="int">Integer (4 байта)</option>
+                    <option value="float">Float / Double (8 байт)</option>
+                    <option value="string" selected>String (Длина текста)</option>
+                </select>
+                <input type="text" id="varValueInput" class="demo-input" style="flex:1; margin-bottom:0;" value="Код">
+            </div>
+
+            <div style="margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Занято <strong id="allocatedCount" style="color: var(--primary);">0</strong> из 32 байт RAM:
+            </div>
+
+            <div class="ram-grid" id="ramGrid">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOCK 5: Self-Check Quiz -->
+    <section class="card">
+        <div class="card-header">
+            <div class="icon-wrapper">🎯</div>
+            <h2>4. Закрепление знаний: Мини-тест</h2>
+        </div>
+
+        <div class="theory-block">
+            <h3>📖 Проверьте себя</h3>
+            <p>Ответьте на вопросы, чтобы закрепить материал:</p>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <p style="font-weight: 600; color: #fff;">1. Сколько байт занимает русская или армянская буква в UTF-8?</p>
+            <div class="quiz-option" onclick="checkAnswer(this, false)">1 байт</div>
+            <div class="quiz-option" onclick="checkAnswer(this, true)">2 байта</div>
+            <div class="quiz-option" onclick="checkAnswer(this, false)">4 байта</div>
+        </div>
+
+        <div>
+            <p style="font-weight: 600; color: #fff;">2. Является ли знак переноса строки (Enter) символом в памяти компьютера?</p>
+            <div class="quiz-option" onclick="checkAnswer(this, true)">Да, он имеет свой числовой код (ASCII 10) и занимает место</div>
+            <div class="quiz-option" onclick="checkAnswer(this, false)">Нет, это просто физическое действие и памяти оно не требует</div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Интерактивный обучающий материал по структуре данных и памяти ЭВМ</p>
+    </footer>
+</div>
+
+<script>
+    // 1. Bit Converter
+    const bitInput = document.getElementById('bitInput');
+    const bitResult = document.getElementById('bitResult');
+    const decResult = document.getElementById('decResult');
+
+    function updateBitConverter() {
+        const val = bitInput.value || ' ';
+        const code = val.charCodeAt(0);
+        bitResult.textContent = code.toString(2).padStart(8, '0');
+        decResult.textContent = code;
+    }
+
+    bitInput.addEventListener('input', updateBitConverter);
+    updateBitConverter();
+
+    // 2. Realtime Text Analyzer & Buttons logic
+    const userInput = document.getElementById('userInput');
+    const totalBytes = document.getElementById('totalBytes');
+    const totalChars = document.getElementById('totalChars');
+    const charBreakdown = document.getElementById('charBreakdown');
+
+    const btnSpace = document.getElementById('btnSpace');
+    const btnEnter = document.getElementById('btnEnter');
+    const btnHash = document.getElementById('btnHash');
+    const btnClear = document.getElementById('btnClear');
+
+    function analyzeText() {
+        const text = userInput.value;
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(text);
+        
+        totalBytes.textContent = `${bytes.length} байт`;
+        const charArray = Array.from(text);
+        totalChars.textContent = charArray.length;
+
+        charBreakdown.innerHTML = '';
+
+        charArray.forEach(char => {
+            const charBytes = encoder.encode(char).length;
+            const codePoint = char.codePointAt(0);
+            const hexCode = 'U+' + codePoint.toString(16).toUpperCase().padStart(4, '0');
+
+            let displayChar = char;
+            let isSpecial = false;
+
+            if (char === ' ') {
+                displayChar = 'Space';
+                isSpecial = true;
+            } else if (char === '\n') {
+                displayChar = '\\n (Enter)';
+                isSpecial = true;
+            } else if (char === '\t') {
+                displayChar = '\\t (Tab)';
+                isSpecial = true;
+            }
+
+            const chip = document.createElement('div');
+            chip.className = `char-chip ${isSpecial ? 'special' : ''}`;
+            chip.innerHTML = `
+                <span class="char-symbol">${displayChar}</span>
+                <span class="char-meta" style="color:var(--accent);">${charBytes} B</span>
+                <span class="char-meta">${hexCode}</span>
+            `;
+            charBreakdown.appendChild(chip);
+        });
+    }
+
+    function appendCharacter(char) {
+        userInput.value += char;
+        userInput.focus();
+        analyzeText();
+    }
+
+    btnSpace.addEventListener('click', () => appendCharacter(' '));
+    btnEnter.addEventListener('click', () => appendCharacter('\n'));
+    btnHash.addEventListener('click', () => appendCharacter('#'));
+    btnClear.addEventListener('click', () => {
+        userInput.value = '';
+        analyzeText();
+    });
+
+    userInput.addEventListener('input', analyzeText);
+    analyzeText();
+
+    // 3. RAM Allocator Simulator
+    const dataTypeSelect = document.getElementById('dataTypeSelect');
+    const varValueInput = document.getElementById('varValueInput');
+    const ramGrid = document.getElementById('ramGrid');
+    const allocatedCount = document.getElementById('allocatedCount');
+
+    for (let i = 0; i < 32; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'ram-cell';
+        cell.id = `ram-${i}`;
+        cell.textContent = `0x${i.toString(16).padStart(2, '0')}`;
+        ramGrid.appendChild(cell);
+    }
+
+    function updateRamSimulation() {
+        const type = dataTypeSelect.value;
+        const val = varValueInput.value;
+        let bytesNeeded = 0;
+
+        if (type === 'bool') bytesNeeded = 1;
+        else if (type === 'int') bytesNeeded = 4;
+        else if (type === 'float') bytesNeeded = 8;
+        else if (type === 'string') {
+            bytesNeeded = new TextEncoder().encode(val).length + 2;
+        }
+
+        if (bytesNeeded > 32) bytesNeeded = 32;
+        allocatedCount.textContent = bytesNeeded;
+
+        for (let i = 0; i < 32; i++) {
+            const cell = document.getElementById(`ram-${i}`);
+            if (i < bytesNeeded) {
+                cell.classList.add('allocated');
+                cell.textContent = '1';
+            } else {
+                cell.classList.remove('allocated');
+                cell.textContent = '0';
+            }
+        }
+    }
+
+    dataTypeSelect.addEventListener('change', updateRamSimulation);
+    varValueInput.addEventListener('input', updateRamSimulation);
+    updateRamSimulation();
+
+    // 4. Quiz Logic
+    function checkAnswer(element, isCorrect) {
+        const parent = element.parentElement;
+        const options = parent.querySelectorAll('.quiz-option');
+        options.forEach(opt => opt.classList.remove('correct', 'wrong'));
+
+        if (isCorrect) {
+            element.classList.add('correct');
+        } else {
+            element.classList.add('wrong');
+        }
+    }
+</script>
+
+</body>
+</html>
